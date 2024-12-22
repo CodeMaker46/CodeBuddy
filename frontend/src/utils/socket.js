@@ -2,6 +2,6 @@
 import { io } from 'socket.io-client';
 
 // Create socket connection
-const socket = io('http://localhost:4000');
+const socket = io('https://codebuddy-rwfi.onrender.com');
 
 export default socket;
