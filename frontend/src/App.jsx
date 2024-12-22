@@ -68,7 +68,7 @@ const App = () => {
     });
 
 
-    socket.on("langaugeUpdate", (newLanguage) => {
+    socket.on("languageUpdate", (newLanguage) => {
       setLanguage(newLanguage); // Update language when the event is received
     });
 
