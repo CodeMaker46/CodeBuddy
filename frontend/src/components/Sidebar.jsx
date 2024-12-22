@@ -8,7 +8,7 @@ import LeaveRoom from "./LeaveRoom";
 const Sidebar = ({ roomId, users , language,setLanguage, typing ,setJoined,setUserName,setRoomId,setCode,
 }) => {
   return (
-    <div className="w-1/5 p-4 bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white rounded-lg shadow-xl h-full">
+    <div className="w-1/5 p-4 bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white rounded-lg shadow-xl h-screen">
       {/* Room Info */}
       <RoomInfo roomId={roomId} />
 
