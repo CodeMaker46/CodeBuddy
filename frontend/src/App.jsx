@@ -1,175 +1,273 @@
-import React, { useState, useEffect } from "react";
-import Form from "./components/Form";
-import Sidebar from "./components/Sidebar";
-import socket from "./utils/socket";
-import Editor from "@monaco-editor/react";
+import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import socket from './utils/socket'; // Assuming you have a socket instance
+import Form from './components/Form';
+import Sidebar from './components/Sidebar';
+import Editor from '@monaco-editor/react';
+import Whiteboard from './components/Whiteboard';
 
 const App = () => {
   const [joined, setJoined] = useState(false);
-  const [roomId, setRoomId] = useState("");
-  const [userName, setUserName] = useState("");
-  const [language, setLanguage] = useState("javascript");
-  const [code, setCode] = useState("//start code here");
+  const [roomId, setRoomId] = useState('');
+  const [userName, setUserName] = useState('');
+  const [language, setLanguage] = useState('javascript');
+  const [code, setCode] = useState('// Start coding here...');
+  const [input, setInput] = useState('');
+  const [output, setOutput] = useState('');
   const [users, setUsers] = useState([]);
   const [typing, setTyping] = useState([]);
-  const [typingTimeouts, setTypingTimeouts] = useState({});
+  //const [videoOn, setVideoOn] = useState(true);
+  //const [audioOn, setAudioOn] = useState(true);
+
+  //const userVideoRef = useRef(null);
+  //const peerConnections = useRef({});
+
+  // useEffect(() => {
+  //   if (joined) {
+  //     startVideoStream();
+  //   }
+  //   return () => {
+  //     stopVideoStream();
+  //   };
+  // }, [joined]);
+
+  // const startVideoStream = async () => {
+  //   try {
+  //     const stream = await navigator.mediaDevices.getUserMedia({
+  //       video: true,
+  //       audio: true,
+  //     });
+
+  //     if (userVideoRef.current) {
+  //       userVideoRef.current.srcObject = stream;
+  //     }
+
+  //     peerConnections.current.localStream = stream;
+  //   } catch (err) {
+  //     console.error('Error accessing media devices.', err);
+  //   }
+  // };
+
+  // const stopVideoStream = () => {
+  //   const stream = peerConnections.current.localStream;
+  //   if (stream) {
+  //     const tracks = stream.getTracks();
+  //     tracks.forEach((track) => track.stop());
+  //   }
+  // };
 
   const handleJoin = (roomId, userName) => {
-    // Emit the join event to the server
-    socket.emit("join", { roomId: roomId, userName });
-    // Set the user as joined
+    socket.emit('join', { roomId, userName });
     setRoomId(roomId);
     setUserName(userName);
     setJoined(true);
   };
 
-
-
   const handleCodeChange = (newCode) => {
     setCode(newCode);
-    socket.emit("codeChange", { roomId, code: newCode });
-    socket.emit("typing", { roomId, userName });
+    socket.emit('codeChange', { roomId, code: newCode });
+    socket.emit('typing', { roomId, userName });
   };
 
+  const handleLanguageChange = (newLanguage) => {
+    setLanguage(newLanguage);
+    socket.emit('languageChange', { roomId, language: newLanguage });
+  };
+
+  const handleRunCode = async () => {
+    try {
+      const response = await fetch('https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
+          'X-RapidAPI-Key': 'f9eb67ee20mshbc9cb68f5e49379p1c234fjsne0d501c9daed', // Replace with your actual API key
+        },
+        body: JSON.stringify({
+          language_id: getLanguageId(language),
+          source_code: code,
+          stdin: input,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setOutput(data.stdout || data.stderr || 'No output produced.');
+      } else {
+        setOutput(`Error: ${data.message || 'An error occurred while executing the code.'}`);
+      }
+    } catch (error) {
+      console.error('Error running code:', error);
+      setOutput('An error occurred while executing the code.');
+    }
+  };
+
+  const getLanguageId = (language) => {
+    const languages = {
+      javascript: 63,
+      python: 71,
+      java: 62,
+      c: 50,
+      cpp: 54,
+    };
+    return languages[language.toLowerCase()] || 63; // Default to JavaScript if unknown
+  };
+
+  // const toggleVideo = () => {
+  //   setVideoOn((prev) => !prev);
+  //   if (peerConnections.current.localStream) {
+  //     const videoTrack = peerConnections.current.localStream.getVideoTracks()[0];
+  //     videoTrack.enabled = !videoTrack.enabled;
+  //   }
+  // };
+
+  // const toggleAudio = () => {
+  //   setAudioOn((prev) => !prev);
+  //   if (peerConnections.current.localStream) {
+  //     const audioTrack = peerConnections.current.localStream.getAudioTracks()[0];
+  //     audioTrack.enabled = !audioTrack.enabled;
+  //   }
+  // };
+
   useEffect(() => {
-    socket.on("userJoined", (users) => {
-      console.log("Users in the room: ", users);
-      setUsers(users);
+    socket.on('userJoined', (roomUsers) => {
+      setUsers(roomUsers);
     });
 
-    socket.on("codeUpdate", (newCode) => {
+    socket.on('userTyping', (userName) => {
+      setTyping((prevTyping) => [...prevTyping, userName]);
+      setTimeout(() => {
+        setTyping((prevTyping) => prevTyping.filter((user) => user !== userName));
+      }, 3000); // Clear after 3 seconds
+    });
+
+    socket.on('codeUpdate', (newCode) => {
       setCode(newCode);
     });
 
-    socket.on("userTyping", (user) => {
-      // Add the user to typing list if they are not already typing
-      setTyping((prevTyping) => {
-        if (!prevTyping.includes(user)) {
-          return [...prevTyping, user];
-        }
-        return prevTyping;
-      });
-
-      // Clear any previous timeout for this user if they are typing again
-      if (typingTimeouts[user]) {
-        clearTimeout(typingTimeouts[user]);
-      }
-
-      // Set a timeout to remove the user from the typing list after 2 seconds
-      const timeoutId = setTimeout(() => {
-        setTyping((prevTyping) => prevTyping.filter((typingUser) => typingUser !== user));
-      }, 1500);
-
-      // Store the timeout ID for this user
-      setTypingTimeouts((prev) => ({
-        ...prev,
-        [user]: timeoutId,
-      }));
+    socket.on('languageUpdate', (newLanguage) => {
+      setLanguage(newLanguage);
     });
 
-
-    socket.on("languageUpdate", (newLanguage) => {
-      setLanguage(newLanguage); // Update language when the event is received
-    });
-
-    // Cleanup the socket event when the component is unmounted
     return () => {
-      socket.off("userJoined");
-      socket.off("codeUpdate");
-      socket.off("userTyping");
-      socket.off("languageChange");
+      socket.off('userJoined');
+      socket.off('userTyping');
+      socket.off('codeUpdate');
+      socket.off('languageUpdate');
     };
-  }, [typingTimeouts]);
-
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      socket.emit("leaveRoom");
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    // Cleanup the event listener
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, []);
-
-  useEffect(() => {
-    // Dynamically load languages when the selected language changes
-    if (language === "python") {
-      import("monaco-editor/esm/vs/basic-languages/python/python.contribution").then(() => {
-        console.log("Python language support loaded");
-      });
-    } else if (language === "java") {
-      import("monaco-editor/esm/vs/basic-languages/java/java.contribution").then(() => {
-        console.log("Java language support loaded");
-      });
-    } else if (language === "cpp") {
-      import("monaco-editor/esm/vs/basic-languages/cpp/cpp.contribution").then(() => {
-        console.log("C++ language support loaded");
-      });
-    } else if (language === "javascript") {
-      import("monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution").then(() => {
-        console.log("JavaScript language support loaded");
-      });
-    }
-
-    // Add more languages as needed...
-  }, [language]);
+  }, [roomId]);
 
   return (
-    <div className="flex min-h-screen bg-black text-white">
-      {/* Form only if the user hasn't joined */}
-      {!joined ? (
-        <div className="w-full">
-          <Form
-            roomId={roomId}
-            userName={userName}  // Pass the state as a prop
-            setRoomId={setRoomId}
-            setUserName={setUserName}
-            handleJoin={handleJoin}  // Pass the function to handle form submission
-          />
-        </div>
-      ) : (
-        <div className="flex w-full">
-          {/* Sidebar with room info, user list, and language selector */}
-          <Sidebar
-            roomId={roomId}
-            users={users}
-            setUsers={setUsers}
-            setLanguage={setLanguage}
-            language={language}
-            typing={typing}
-            setJoined={setJoined}
-            setUserName={setUserName}
-            setRoomId={setRoomId}
-            setCode={setCode}
-          />
-
-          {/* Main content area (Code Editor, etc.) */}
-          <div className="w-3/4 p-4">
-            <h1 className="text-2xl font-semibold text-center">Welcome to Room {roomId}</h1>
-            <p className="mt-4 text-lg text-center">
-              Hello, <span className="font-bold">{userName}</span>! Start coding below.
-            </p>
-
-            {/* You can add your Code Editor component here */}
-            <Editor
-              language={language}
-              value={code}
-              onChange={handleCodeChange}
-              theme="vs-dark"
-              options={{
-                minimap: { enabled: false },
-                fontSize: 16,
-              }}
+    <Router>
+      <div className="flex min-h-screen bg-black text-white">
+        {!joined ? (
+          <div className="w-full">
+            <Form
+              roomId={roomId}
+              userName={userName}
+              setRoomId={setRoomId}
+              setUserName={setUserName}
+              handleJoin={handleJoin}
+            />
+          </div>
+        ) : (
+          <Routes>
+            {/* Home Path */}
+            <Route
+              path="/"
+              element={
+                <div className="flex w-full">
+                  <Sidebar
+                    roomId={roomId}
+                    users={users}
+                    setUsers={setUsers}
+                    setLanguage={handleLanguageChange}
+                    language={language}
+                    typing={typing}
+                    setJoined={setJoined}
+                    setUserName={setUserName}
+                    setRoomId={setRoomId}
+                    setCode={setCode}
+                  />
+                  <div className="w-3/4 p-4 flex flex-col gap-4 relative">
+                    <h1 className="text-2xl font-semibold text-center">Welcome to Room {roomId}</h1>
+                    <p className="text-lg text-center">
+                      Hello, <span className="font-bold">{userName}</span>! Start coding below.
+                    </p>
+                    <div className="flex-grow mt-24">
+                      <Editor
+                        language={language}
+                        value={code}
+                        onChange={handleCodeChange}
+                        theme="vs-dark"
+                        options={{
+                          minimap: { enabled: false },
+                          fontSize: 16,
+                        }}
+                        height="400px"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">Input:</h3>
+                      <textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        className="w-full p-2 mt-2 bg-gray-700 rounded-lg text-white"
+                        rows="4"
+                        placeholder="Enter input for your code here..."
+                      ></textarea>
+                    </div>
+                    <button
+                      onClick={handleRunCode}
+                      className="py-2 px-4 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-semibold shadow-lg"
+                    >
+                      Run Code
+                    </button>
+                    <div>
+                      <h3 className="text-lg font-semibold">Output:</h3>
+                      <div
+                        className="w-full p-4 mt-2 bg-gray-800 rounded-lg text-white overflow-y-auto max-h-40"
+                        dangerouslySetInnerHTML={{
+                          __html: (output || 'The output will be displayed here...').replace(/\n/g, '<br />'),
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              }
             />
 
-            
-          </div>
-        </div>
-      )}
-    </div>
+            {/* Whiteboard Path */}
+            <Route
+              path="/whiteboard"
+              element={
+                <div className="flex w-full">
+                  <Sidebar
+                    roomId={roomId}
+                    users={users}
+                    setUsers={setUsers}
+                    setLanguage={handleLanguageChange}
+                    language={language}
+                    typing={typing}
+                    setJoined={setJoined}
+                    setUserName={setUserName}
+                    setRoomId={setRoomId}
+                    setCode={setCode}
+                  />
+                  <div className="w-3/4 p-4">
+                    <Whiteboard socket={socket} roomId={roomId} />
+                  </div>
+                </div>
+              }
+            />
+
+            {/* Redirect to Home if no match */}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        )}
+      </div>
+    </Router>
   );
 };
 
