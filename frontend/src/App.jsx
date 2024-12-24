@@ -16,8 +16,7 @@ const App = () => {
   const [output, setOutput] = useState('');
   const [users, setUsers] = useState([]);
   const [typing, setTyping] = useState([]);
-  //const [videoOn, setVideoOn] = useState(true);
-  //const [audioOn, setAudioOn] = useState(true);
+  const [showWhiteBoard, setShowWhiteBoard] = useState(false);
 
   //const userVideoRef = useRef(null);
   //const peerConnections = useRef({});
@@ -172,99 +171,69 @@ const App = () => {
             />
           </div>
         ) : (
-          <Routes>
-            {/* Home Path */}
-            <Route
-              path="/"
-              element={
-                <div className="flex w-full">
-                  <Sidebar
-                    roomId={roomId}
-                    users={users}
-                    setUsers={setUsers}
-                    setLanguage={handleLanguageChange}
-                    language={language}
-                    typing={typing}
-                    setJoined={setJoined}
-                    setUserName={setUserName}
-                    setRoomId={setRoomId}
-                    setCode={setCode}
-                  />
-                  <div className="w-3/4 p-4 flex flex-col gap-4 relative">
-                    <h1 className="text-2xl font-semibold text-center">Welcome to Room {roomId}</h1>
-                    <p className="text-lg text-center">
-                      Hello, <span className="font-bold">{userName}</span>! Start coding below.
-                    </p>
-                    <div className="flex-grow mt-24">
-                      <Editor
-                        language={language}
-                        value={code}
-                        onChange={handleCodeChange}
-                        theme="vs-dark"
-                        options={{
-                          minimap: { enabled: false },
-                          fontSize: 16,
-                        }}
-                        height="400px"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold">Input:</h3>
-                      <textarea
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        className="w-full p-2 mt-2 bg-gray-700 rounded-lg text-white"
-                        rows="4"
-                        placeholder="Enter input for your code here..."
-                      ></textarea>
-                    </div>
-                    <button
-                      onClick={handleRunCode}
-                      className="py-2 px-4 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-semibold shadow-lg"
-                    >
-                      Run Code
-                    </button>
-                    <div>
-                      <h3 className="text-lg font-semibold">Output:</h3>
-                      <div
-                        className="w-full p-4 mt-2 bg-gray-800 rounded-lg text-white overflow-y-auto max-h-40"
-                        dangerouslySetInnerHTML={{
-                          __html: (output || 'The output will be displayed here...').replace(/\n/g, '<br />'),
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              }
+          <div className="flex w-full">
+            <Sidebar
+              roomId={roomId}
+              users={users}
+              setUsers={setUsers}
+              setLanguage={handleLanguageChange}
+              language={language}
+              typing={typing}
+              setJoined={setJoined}
+              setUserName={setUserName}
+              setRoomId={setRoomId}
+              setCode={setCode}
+              setShowWhiteBoard={setShowWhiteBoard}
+              showWhiteBoard={showWhiteBoard}
+              // handleJoinCall={handleJoinCall}
             />
-
-            {/* Whiteboard Path */}
-            <Route
-              path="/whiteboard"
-              element={
-                <div className="flex w-full">
-                  <Sidebar
-                    roomId={roomId}
-                    users={users}
-                    setUsers={setUsers}
-                    setLanguage={handleLanguageChange}
+            <div className="w-3/4 p-4 flex flex-col gap-4 relative">
+              {showWhiteBoard ? (
+                <Whiteboard socket={socket} roomId={roomId} />
+              ) : (
+                <>
+                  <h1 className="text-2xl font-semibold text-center">Welcome to Room {roomId}</h1>
+                  <p className="text-lg text-center">
+                    Hello, <span className="font-bold">{userName}</span>! Start coding below.
+                  </p>
+                  <Editor
                     language={language}
-                    typing={typing}
-                    setJoined={setJoined}
-                    setUserName={setUserName}
-                    setRoomId={setRoomId}
-                    setCode={setCode}
+                    value={code}
+                    onChange={handleCodeChange}
+                    theme="vs-dark"
+                    options={{
+                      minimap: { enabled: false },
+                      fontSize: 16,
+                    }}
+                    height="400px"
                   />
-                  <div className="w-3/4 p-4">
-                    <Whiteboard socket={socket} roomId={roomId} />
+                  <div>
+                    <p className="mb-3">Input</p>
+                    <textarea
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      className="w-full p-2 mt-2 bg-gray-700 rounded-lg text-white"
+                      rows="4"
+                      placeholder="Enter input for your code here..."
+                    />
                   </div>
-                </div>
-              }
-            />
-
-            {/* Redirect to Home if no match */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+                  <button
+                    onClick={handleRunCode}
+                    className="py-2 px-4 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-semibold shadow-lg"
+                  >
+                    Run Code
+                  </button>
+                  <p>Output</p>
+                  <div
+                    className="w-full p-2 mt-1 bg-gray-800 rounded-lg text-white overflow-y-auto max-h-40"
+                    dangerouslySetInnerHTML={{
+                      __html: (output || 'The output will be displayed here...').replace(/\n/g, '<br />'),
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </Router>
