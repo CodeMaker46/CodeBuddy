@@ -5,6 +5,7 @@ import Form from './components/Form';
 import Sidebar from './components/Sidebar';
 import Editor from '@monaco-editor/react';
 import Whiteboard from './components/Whiteboard';
+import VoiceChat from './components/VoiceChat';
 
 const App = () => {
   const [joined, setJoined] = useState(false);
@@ -16,44 +17,8 @@ const App = () => {
   const [output, setOutput] = useState('');
   const [users, setUsers] = useState([]);
   const [typing, setTyping] = useState([]);
+  const [speaking, setSpeaking] = useState([]);
   const [showWhiteBoard, setShowWhiteBoard] = useState(false);
-
-  //const userVideoRef = useRef(null);
-  //const peerConnections = useRef({});
-
-  // useEffect(() => {
-  //   if (joined) {
-  //     startVideoStream();
-  //   }
-  //   return () => {
-  //     stopVideoStream();
-  //   };
-  // }, [joined]);
-
-  // const startVideoStream = async () => {
-  //   try {
-  //     const stream = await navigator.mediaDevices.getUserMedia({
-  //       video: true,
-  //       audio: true,
-  //     });
-
-  //     if (userVideoRef.current) {
-  //       userVideoRef.current.srcObject = stream;
-  //     }
-
-  //     peerConnections.current.localStream = stream;
-  //   } catch (err) {
-  //     console.error('Error accessing media devices.', err);
-  //   }
-  // };
-
-  // const stopVideoStream = () => {
-  //   const stream = peerConnections.current.localStream;
-  //   if (stream) {
-  //     const tracks = stream.getTracks();
-  //     tracks.forEach((track) => track.stop());
-  //   }
-  // };
 
   const handleJoin = (roomId, userName) => {
     socket.emit('join', { roomId, userName });
@@ -113,21 +78,6 @@ const App = () => {
     return languages[language.toLowerCase()] || 63; // Default to JavaScript if unknown
   };
 
-  // const toggleVideo = () => {
-  //   setVideoOn((prev) => !prev);
-  //   if (peerConnections.current.localStream) {
-  //     const videoTrack = peerConnections.current.localStream.getVideoTracks()[0];
-  //     videoTrack.enabled = !videoTrack.enabled;
-  //   }
-  // };
-
-  // const toggleAudio = () => {
-  //   setAudioOn((prev) => !prev);
-  //   if (peerConnections.current.localStream) {
-  //     const audioTrack = peerConnections.current.localStream.getAudioTracks()[0];
-  //     audioTrack.enabled = !audioTrack.enabled;
-  //   }
-  // };
 
   useEffect(() => {
     socket.on('userJoined', (roomUsers) => {
@@ -185,7 +135,8 @@ const App = () => {
               setCode={setCode}
               setShowWhiteBoard={setShowWhiteBoard}
               showWhiteBoard={showWhiteBoard}
-              // handleJoinCall={handleJoinCall}
+              userName={userName}
+              socket={socket}
             />
             <div className="w-3/4 p-4 flex flex-col gap-4 relative">
               {showWhiteBoard ? (
@@ -230,6 +181,8 @@ const App = () => {
                       __html: (output || 'The output will be displayed here...').replace(/\n/g, '<br />'),
                     }}
                   />
+                  
+
                 </>
               )}
             </div>

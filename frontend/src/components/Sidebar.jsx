@@ -1,5 +1,4 @@
 
-
 import React from "react";
 import PropTypes from "prop-types";
 import RoomInfo from "./RoomInfo";
@@ -8,10 +7,13 @@ import LanguageSelector from "./LanguageSelector";
 import LeaveRoom from "./LeaveRoom";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import { useState } from "react";
+import VoiceChat from "./VoiceChat";
 
 const Sidebar = ({
   roomId,
   users,
+  userName,
+  socket,
   language,
   setLanguage,
   typing,
@@ -49,6 +51,9 @@ const Sidebar = ({
       >
         {showWhiteBoard ? "Close Whiteboard" : "Open Whiteboard"}
       </button>
+
+      {/* Call functionality */}
+      <VoiceChat roomId={roomId} userName={userName} socket={socket}/>
 
       {/* Spacer to push Leave Room button to the bottom */}
       <div className="flex-grow"></div>

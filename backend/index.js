@@ -67,10 +67,7 @@ io.on("connection", (socket) => {
 
     // Real-time whiteboard
     socket.on("draw", (data) => {
-      //console.log("Draw event received from user", socket.id);
       const { roomId, x1, y1, x2, y2, color, width, isEraser } = data;
-
-      // Broadcast drawing or erasing data to all clients in the same room except the sender
       socket.to(roomId).emit("draw", {
         x1,
         y1,
@@ -80,6 +77,60 @@ io.on("connection", (socket) => {
         width,
         isEraser,
       });
+    });
+
+    // Voice Chat Handlers
+    socket.on("joinCall", ({ roomId, userName }) => {
+      console.log(`${userName} joined call in room ${roomId}`);
+      // Notify all other users in the room
+      socket.to(roomId).emit("userJoinedCall", { userName });
+    });
+
+    socket.on("leaveCall", ({ roomId, userName }) => {
+      console.log(`${userName} left call in room ${roomId}`);
+      // Notify all other users in the room
+      socket.to(roomId).emit("userLeftCall", { userName });
+    });
+
+    // WebRTC Signaling
+    socket.on("webrtc-offer", ({ roomId, offer, sender, receiver }) => {
+      console.log(`Sending offer from ${sender} to ${receiver} in room ${roomId}`);
+      // If receiver is specified, send only to that user
+      if (receiver) {
+        const receiverSocketId = rooms.get(roomId).get(receiver);
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit("webrtc-offer", { offer, sender });
+        }
+      } else {
+        // Otherwise broadcast to all users in room
+        socket.to(roomId).emit("webrtc-offer", { offer, sender });
+      }
+    });
+
+    socket.on("webrtc-answer", ({ roomId, answer, sender, receiver }) => {
+      console.log(`Sending answer from ${sender} to ${receiver} in room ${roomId}`);
+      // If receiver is specified, send only to that user
+      if (receiver) {
+        const receiverSocketId = rooms.get(roomId).get(receiver);
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit("webrtc-answer", { answer, sender });
+        }
+      } else {
+        socket.to(roomId).emit("webrtc-answer", { answer, sender });
+      }
+    });
+
+    socket.on("webrtc-ice-candidate", ({ roomId, candidate, sender, receiver }) => {
+      console.log(`Sending ICE candidate from ${sender} to ${receiver}`);
+      // If receiver is specified, send only to that user
+      if (receiver) {
+        const receiverSocketId = rooms.get(roomId).get(receiver);
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit("webrtc-ice-candidate", { candidate, sender });
+        }
+      } else {
+        socket.to(roomId).emit("webrtc-ice-candidate", { candidate, sender });
+      }
     });
 
     socket.on("leaveRoom", () => {
@@ -96,6 +147,8 @@ io.on("connection", (socket) => {
       if (currentRoom && currentUser) {
         rooms.get(currentRoom).delete(currentUser);
         io.to(currentRoom).emit("userJoined", Array.from(rooms.get(currentRoom).keys()));
+        // Also notify about leaving call when disconnecting
+        socket.to(currentRoom).emit("userLeftCall", { userName: currentUser });
       }
       console.log("User disconnected");
     });
