@@ -1,6 +1,6 @@
 
 import { io } from 'socket.io-client';
-const socket = io('https://codebuddy-rwfi.onrender.com'); 
+const socket = io('https://codebuddy-backend-uxv9.onrender.com'); 
 
 socket.on("connect", () => {
   
