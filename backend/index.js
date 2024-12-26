@@ -19,6 +19,8 @@ app.use(express.json());
 
 // Room Management
 const rooms = new Map();
+// Track users in voice calls
+const voiceCallParticipants = new Map();
 
 io.on("connection", (socket) => {
   console.log("User Connected", socket.id);
@@ -28,8 +30,8 @@ io.on("connection", (socket) => {
   socket.on("join", ({ roomId, userName }) => {
     if (currentRoom) {
       socket.leave(currentRoom);
-      rooms.get(currentRoom).delete(userName);
-      io.to(currentRoom).emit("userJoined", Array.from(rooms.get(currentRoom).keys()));
+      rooms.get(currentRoom)?.delete(userName);
+      io.to(currentRoom).emit("userJoined", Array.from(rooms.get(currentRoom)?.keys() || []));
     }
 
     currentRoom = roomId;
@@ -41,6 +43,10 @@ io.on("connection", (socket) => {
       rooms.set(roomId, new Map());
     }
 
+    if (!voiceCallParticipants.has(roomId)) {
+      voiceCallParticipants.set(roomId, new Set());
+    }
+
     const roomUsers = rooms.get(roomId);
 
     if (roomUsers.has(userName)) {
@@ -50,6 +56,12 @@ io.on("connection", (socket) => {
 
     roomUsers.set(userName, socket.id);
     io.to(currentRoom).emit("userJoined", Array.from(roomUsers.keys()));
+    
+    // Send current voice call participants to the new user
+    socket.emit("currentParticipants", {
+      participants: Array.from(voiceCallParticipants.get(roomId) || [])
+    });
+
     console.log(`User: ${userName} has joined the room: ${roomId}`);
 
     // Real-time code collaboration
@@ -80,63 +92,66 @@ io.on("connection", (socket) => {
     });
 
     // Voice Chat Handlers
+    socket.on("requestParticipants", ({ roomId }) => {
+      socket.emit("currentParticipants", {
+        participants: Array.from(voiceCallParticipants.get(roomId) || [])
+      });
+    });
+
     socket.on("joinCall", ({ roomId, userName }) => {
+      const participants = voiceCallParticipants.get(roomId) || new Set();
+      participants.add(userName);
+      voiceCallParticipants.set(roomId, participants);
+      
+      // Notify all users in the room about the new participant
+      io.to(roomId).emit("userJoinedCall", { userName });
       console.log(`${userName} joined call in room ${roomId}`);
-      // Notify all other users in the room
-      socket.to(roomId).emit("userJoinedCall", { userName });
     });
 
     socket.on("leaveCall", ({ roomId, userName }) => {
+      const participants = voiceCallParticipants.get(roomId);
+      if (participants) {
+        participants.delete(userName);
+        // Notify all users in the room
+        io.to(roomId).emit("userLeftCall", { userName });
+      }
       console.log(`${userName} left call in room ${roomId}`);
-      // Notify all other users in the room
-      socket.to(roomId).emit("userLeftCall", { userName });
     });
 
     // WebRTC Signaling
     socket.on("webrtc-offer", ({ roomId, offer, sender, receiver }) => {
       console.log(`Sending offer from ${sender} to ${receiver} in room ${roomId}`);
-      // If receiver is specified, send only to that user
-      if (receiver) {
-        const receiverSocketId = rooms.get(roomId).get(receiver);
-        if (receiverSocketId) {
-          io.to(receiverSocketId).emit("webrtc-offer", { offer, sender });
-        }
-      } else {
-        // Otherwise broadcast to all users in room
-        socket.to(roomId).emit("webrtc-offer", { offer, sender });
+      const receiverSocketId = rooms.get(roomId)?.get(receiver);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("webrtc-offer", { offer, sender });
       }
     });
 
     socket.on("webrtc-answer", ({ roomId, answer, sender, receiver }) => {
       console.log(`Sending answer from ${sender} to ${receiver} in room ${roomId}`);
-      // If receiver is specified, send only to that user
-      if (receiver) {
-        const receiverSocketId = rooms.get(roomId).get(receiver);
-        if (receiverSocketId) {
-          io.to(receiverSocketId).emit("webrtc-answer", { answer, sender });
-        }
-      } else {
-        socket.to(roomId).emit("webrtc-answer", { answer, sender });
+      const receiverSocketId = rooms.get(roomId)?.get(receiver);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("webrtc-answer", { answer, sender });
       }
     });
 
     socket.on("webrtc-ice-candidate", ({ roomId, candidate, sender, receiver }) => {
       console.log(`Sending ICE candidate from ${sender} to ${receiver}`);
-      // If receiver is specified, send only to that user
-      if (receiver) {
-        const receiverSocketId = rooms.get(roomId).get(receiver);
-        if (receiverSocketId) {
-          io.to(receiverSocketId).emit("webrtc-ice-candidate", { candidate, sender });
-        }
-      } else {
-        socket.to(roomId).emit("webrtc-ice-candidate", { candidate, sender });
+      const receiverSocketId = rooms.get(roomId)?.get(receiver);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("webrtc-ice-candidate", { candidate, sender });
       }
     });
 
     socket.on("leaveRoom", () => {
       if (currentRoom && currentUser) {
-        rooms.get(currentRoom).delete(currentUser);
-        io.to(currentRoom).emit("userJoined", Array.from(rooms.get(currentRoom).keys()));
+        const participants = voiceCallParticipants.get(currentRoom);
+        if (participants) {
+          participants.delete(currentUser);
+          io.to(currentRoom).emit("userLeftCall", { userName: currentUser });
+        }
+        rooms.get(currentRoom)?.delete(currentUser);
+        io.to(currentRoom).emit("userJoined", Array.from(rooms.get(currentRoom)?.keys() || []));
       }
       socket.leave(currentRoom);
       currentRoom = null;
@@ -145,10 +160,13 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
       if (currentRoom && currentUser) {
-        rooms.get(currentRoom).delete(currentUser);
-        io.to(currentRoom).emit("userJoined", Array.from(rooms.get(currentRoom).keys()));
-        // Also notify about leaving call when disconnecting
-        socket.to(currentRoom).emit("userLeftCall", { userName: currentUser });
+        const participants = voiceCallParticipants.get(currentRoom);
+        if (participants) {
+          participants.delete(currentUser);
+          io.to(currentRoom).emit("userLeftCall", { userName: currentUser });
+        }
+        rooms.get(currentRoom)?.delete(currentUser);
+        io.to(currentRoom).emit("userJoined", Array.from(rooms.get(currentRoom)?.keys() || []));
       }
       console.log("User disconnected");
     });
