@@ -3,7 +3,7 @@ import { Mic, MicOff, PhoneOff } from "lucide-react";
 
 const VoiceChat = ({ socket, roomId, userName }) => {
     const [isInCall, setIsInCall] = useState(false);
-    const [isMuted, setIsMuted] = useState(true);
+    const [isMuted, setIsMuted] = useState(false);
     const [callStatus, setCallStatus] = useState('idle');
     const [micPermissionStatus, setMicPermissionStatus] = useState(null);
     const [participants, setParticipants] = useState(new Set());
