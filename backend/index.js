@@ -175,13 +175,13 @@ io.on("connection", (socket) => {
 
 // Serve frontend files
 const port = process.env.PORT || 4000;
-const __dirname = path.resolve();
+// const __dirname = path.resolve();
 
-app.use(express.static(path.join(__dirname, "/frontend/dist")));
+// app.use(express.static(path.join(__dirname, "/frontend/dist")));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
-});
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+// });
 
 server.listen(port, () => {
   console.log(`Server live at port ${port}`);
