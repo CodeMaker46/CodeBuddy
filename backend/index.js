@@ -2,7 +2,13 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import path from "path";
+import dotenv from 'dotenv';
+dotenv.config();
+
+
 import cors from "cors";
+
+
 
 const app = express();
 const server = http.createServer(app);
@@ -182,7 +188,9 @@ const port = process.env.PORT || 4000;
 // app.get("*", (req, res) => {
 //   res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
 // });
-
+app.get("/",(req,res)=>{
+  res.send(`Server live at port ${port}`)
+})
 server.listen(port, () => {
   console.log(`Server live at port ${port}`);
 });
