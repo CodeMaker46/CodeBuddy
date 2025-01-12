@@ -146,7 +146,7 @@ const App = () => {
                 />
               ) : (
                 <>
-                  <h1 className="text-2xl font-semibold text-center">Welcome to Room {roomId}</h1>
+                  {/* <h1 className="text-2xl font-semibold text-center">Welcome to Room {roomId}</h1> */}
                   <p className="text-lg text-center">
                     Hello, <span className="font-bold">{userName}</span>! Start coding below.
                   </p>
