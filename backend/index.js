@@ -25,9 +25,29 @@ app.use(express.json());
 
 // Room Management
 const rooms = new Map();
+
 // Track users in voice calls
 const voiceCallParticipants = new Map();
 
+const generateRoomId =  ()=>{
+  const length=10;
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}
+
+const getUniqueRoomId = () =>{
+  let roomId ;
+  do{
+    roomId = generateRoomId();
+  }
+  while(rooms.has(roomId))
+    return roomId;
+
+}
 io.on("connection", (socket) => {
   console.log("User Connected", socket.id);
   let currentRoom = null;
@@ -188,6 +208,12 @@ const port = process.env.PORT || 4000;
 // app.get("*", (req, res) => {
 //   res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
 // });
+
+app.get('/api/generate-room-id', (req,res)=>{
+  const roomId = getUniqueRoomId();
+  res.json({roomId}); 
+})
+
 app.get("/",(req,res)=>{
   res.send(`Server live at port ${port}`)
 })

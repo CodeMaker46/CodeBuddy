@@ -140,7 +140,10 @@ const App = () => {
             />
             <div className="w-3/4 p-4 flex flex-col gap-4 relative">
               {showWhiteBoard ? (
-                <Whiteboard socket={socket} roomId={roomId} />
+                <Whiteboard 
+                socket={socket} 
+                roomId={roomId} 
+                />
               ) : (
                 <>
                   <h1 className="text-2xl font-semibold text-center">Welcome to Room {roomId}</h1>
