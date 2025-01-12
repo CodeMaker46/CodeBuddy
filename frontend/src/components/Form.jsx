@@ -12,7 +12,8 @@ const Form = ({ roomId, userName, setRoomId, setUserName, handleJoin }) => {
 
   const generateRoomId = async ()=>{
     try {
-      const response = await fetch('http://localhost:4000/api/generate-room-id');
+      const response = await fetch('frontend/src/utils/socket.js/api/generate-room-id');
+      // const response = await fetch('http://localhost:4000/api/generate-room-id');
       const data = await response.json();
       setRoomId(data.roomId);
     } catch (error) {
