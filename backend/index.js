@@ -29,8 +29,8 @@ const rooms = new Map();
 // Track users in voice calls
 const voiceCallParticipants = new Map();
 
-const generateRoomId =  ()=>{
-  const length=10;
+const generateRoomId = () => {
+  const length = 10;
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
@@ -39,15 +39,14 @@ const generateRoomId =  ()=>{
   return result;
 }
 
-const getUniqueRoomId = () =>{
-  let roomId ;
-  do{
+const getUniqueRoomId = () => {
+  let roomId;
+  do {
     roomId = generateRoomId();
-  }
-  while(rooms.has(roomId))
-    return roomId;
-
+  } while (rooms.has(roomId));
+  return roomId;
 }
+
 io.on("connection", (socket) => {
   console.log("User Connected", socket.id);
   let currentRoom = null;
