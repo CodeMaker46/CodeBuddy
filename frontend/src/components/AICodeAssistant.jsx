@@ -9,7 +9,7 @@ const AICodeAssistant = ({ editorContent }) => {
   const chatContainerRef = useRef(null);
   
   // Initialize Gemini API with API key from environment variable
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const genAI = new GoogleGenerativeAI(import.meta.env.GEMINI_API_KEY);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
