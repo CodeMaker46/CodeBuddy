@@ -11,7 +11,6 @@ const LeaveRoom = ({setJoined,setUserName,setRoomId,setCode,setLanguage}) => {
         setUserName("")
         setRoomId("")
         setCode("//start code here")
-        setLanguage("javascript")
     };
 
   return (

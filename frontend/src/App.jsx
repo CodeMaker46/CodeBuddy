@@ -12,7 +12,7 @@ const App = () => {
   const [joined, setJoined] = useState(false);
   const [roomId, setRoomId] = useState('');
   const [userName, setUserName] = useState('');
-  const [language, setLanguage] = useState('javascript');
+  const [language, setLanguage] = useState('cpp');
   const [code, setCode] = useState('// Start coding here...');
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
