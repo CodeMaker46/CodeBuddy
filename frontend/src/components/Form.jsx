@@ -8,6 +8,19 @@ const Form = ({ roomId, userName, setRoomId, setUserName, handleJoin }) => {
     
   };
 
+  
+
+  const generateRoomId = async ()=>{
+    try {
+      const response = await fetch('https://codebuddy-backend-uxv9.onrender.com/api/generate-room-id');
+      // const response = await fetch('http://localhost:4000/api/generate-room-id');
+      const data = await response.json();
+      setRoomId(data.roomId);
+    } catch (error) {
+      console.error('Error generating room ID:', error);
+    }
+  }
+
   return (
     <div>
 
@@ -45,6 +58,15 @@ const Form = ({ roomId, userName, setRoomId, setUserName, handleJoin }) => {
               placeholder="Create your room ID"
               required
             />
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={generateRoomId}
+                className="py-1 text-green-500 from-gray-800 via-gray-900 to-black hover:text-green-400 focus:outline-none"
+              >
+                Generate Unique Room Id
+              </button>
+            </div>
           </div>
           {/* Username Input */}
           <div>

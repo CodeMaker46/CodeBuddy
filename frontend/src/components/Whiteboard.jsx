@@ -1,13 +1,14 @@
 import React, { useRef, useState, useEffect } from "react";
 
-const Whiteboard = ({ socket, roomId }) => {
+const Whiteboard = ({ socket, roomId,}) => {
   const canvasRef = useRef(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [lastX, setLastX] = useState(0);
-  const [lastY, setLastY] = useState(0);
+  
   const [lineColor, setLineColor] = useState("#000000"); // Default line color
   const [lineWidth, setLineWidth] = useState(2);
   const [currentTool, setCurrentTool] = useState("pencil"); // Tool state (pencil, pen, eraser)
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [lastX, setLastX] = useState(0);
+  const [lastY, setLastY] = useState(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;

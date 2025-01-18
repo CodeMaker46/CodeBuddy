@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Pure black background circle -->
+  <circle cx="16" cy="16" r="16" fill="#000000"/>
+  
+  <!-- Bright blue code brackets -->
+  <path d="M12 8L6 16L12 24" stroke="#007FFF" stroke-width="2.5" fill="none"/>
+  <path d="M20 8L26 16L20 24" stroke="#007FFF" stroke-width="2.5" fill="none"/>
+  
+  <!-- Center dot in same blue -->
+  <circle cx="16" cy="16" r="3" fill="#007FFF"/>
+</svg>
