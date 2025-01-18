@@ -5,6 +5,11 @@ import Form from './components/Form';
 import Sidebar from './components/Sidebar';
 import Editor from '@monaco-editor/react';
 import Whiteboard from './components/Whiteboard';
+<<<<<<< Updated upstream
+=======
+import VoiceChat from './components/VoiceChat';
+import AICodeAssistant from './components/AICodeAssistant';
+>>>>>>> Stashed changes
 
 const App = () => {
   const [joined, setJoined] = useState(false);
@@ -16,6 +21,7 @@ const App = () => {
   const [output, setOutput] = useState('');
   const [users, setUsers] = useState([]);
   const [typing, setTyping] = useState([]);
+<<<<<<< Updated upstream
   //const [videoOn, setVideoOn] = useState(true);
   //const [audioOn, setAudioOn] = useState(true);
 
@@ -55,6 +61,11 @@ const App = () => {
   //     tracks.forEach((track) => track.stop());
   //   }
   // };
+=======
+  const [speaking, setSpeaking] = useState([]);
+  const [showWhiteBoard, setShowWhiteBoard] = useState(false);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
+>>>>>>> Stashed changes
 
   const handleJoin = (roomId, userName) => {
     socket.emit('join', { roomId, userName });
@@ -114,6 +125,7 @@ const App = () => {
     return languages[language.toLowerCase()] || 63; // Default to JavaScript if unknown
   };
 
+<<<<<<< Updated upstream
   // const toggleVideo = () => {
   //   setVideoOn((prev) => !prev);
   //   if (peerConnections.current.localStream) {
@@ -130,6 +142,8 @@ const App = () => {
   //   }
   // };
 
+=======
+>>>>>>> Stashed changes
   useEffect(() => {
     socket.on('userJoined', (roomUsers) => {
       setUsers(roomUsers);
@@ -160,7 +174,7 @@ const App = () => {
 
   return (
     <Router>
-      <div className="flex min-h-screen bg-black text-white">
+      <div className="flex min-h-screen bg-black text-white overflow-hidden">
         {!joined ? (
           <div className="w-full">
             <Form
@@ -172,6 +186,7 @@ const App = () => {
             />
           </div>
         ) : (
+<<<<<<< Updated upstream
           <Routes>
             {/* Home Path */}
             <Route
@@ -265,6 +280,108 @@ const App = () => {
             {/* Redirect to Home if no match */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
+=======
+          <div className="flex w-full overflow-hidden">
+            <Sidebar
+              roomId={roomId}
+              users={users}
+              setUsers={setUsers}
+              setLanguage={handleLanguageChange}
+              language={language}
+              typing={typing}
+              setJoined={setJoined}
+              setUserName={setUserName}
+              setRoomId={setRoomId}
+              setCode={setCode}
+              setShowWhiteBoard={setShowWhiteBoard}
+              showWhiteBoard={showWhiteBoard}
+              userName={userName}
+              socket={socket}
+            />
+            <div className="flex flex-1 overflow-hidden">
+              <div className={`${showWhiteBoard ? 'w-full' : showAIAssistant ? 'w-2/3' : 'w-full'} p-4 flex flex-col gap-4 relative overflow-y-auto`}>
+                {/* AI Assistant Toggle Button */}
+                {!showWhiteBoard && (
+                  <div className="absolute top-2 right-4 z-10">
+                    <button
+                      onClick={() => setShowAIAssistant(!showAIAssistant)}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-medium shadow-lg transition-all"
+                    >
+                      {showAIAssistant ? (
+                        <>
+                          <span>Hide AI Assistant</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </>
+                      ) : (
+                        <>
+                          <span>Show AI Assistant</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                          </svg>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+                
+                {showWhiteBoard ? (
+                  <Whiteboard 
+                    socket={socket} 
+                    roomId={roomId} 
+                  />
+                ) : (
+                  <>
+                    <p className="text-lg text-center mt-12">
+                      Hello, <span className="font-bold">{userName}</span>! Start coding below.
+                    </p>
+                    <Editor
+                      language={language}
+                      value={code}
+                      onChange={handleCodeChange}
+                      theme="vs-dark"
+                      options={{
+                        minimap: { enabled: false },
+                        fontSize: 16,
+                      }}
+                      height="400px"
+                    />
+                    <div>
+                      <p className="mb-3">Input</p>
+                      <textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        className="w-full p-2 mt-2 bg-gray-700 rounded-lg text-white"
+                        rows="4"
+                        placeholder="Enter input for your code here..."
+                      />
+                    </div>
+                    <button
+                      onClick={handleRunCode}
+                      className="py-2 px-4 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-semibold shadow-lg"
+                    >
+                      Run Code
+                    </button>
+                    <p>Output</p>
+                    <div
+                      className="w-full p-2 mt-1 bg-gray-800 rounded-lg text-white overflow-y-auto max-h-40"
+                      dangerouslySetInnerHTML={{
+                        __html: (output || 'The output will be displayed here...').replace(/\n/g, '<br />'),
+                      }}
+                    />
+                  </>
+                )}
+              </div>
+              {/* AI Assistant Column - Only show when whiteboard is not active and AI is toggled on */}
+              {!showWhiteBoard && showAIAssistant && (
+                <div className="w-1/3 border-l border-gray-700 p-4 bg-gray-900 overflow-y-auto">
+                  <AICodeAssistant editorContent={code} />
+                </div>
+              )}
+            </div>
+          </div>
+>>>>>>> Stashed changes
         )}
       </div>
     </Router>
