@@ -6,7 +6,10 @@ import Sidebar from './components/Sidebar';
 import Editor from '@monaco-editor/react';
 import Whiteboard from './components/Whiteboard';
 import VoiceChat from './components/VoiceChat';
+<<<<<<< HEAD
 import AICodeAssistant from './components/AICodeAssistant';
+=======
+>>>>>>> origin/main
 
 const App = () => {
   const [joined, setJoined] = useState(false);
@@ -20,7 +23,10 @@ const App = () => {
   const [typing, setTyping] = useState([]);
   const [speaking, setSpeaking] = useState([]);
   const [showWhiteBoard, setShowWhiteBoard] = useState(false);
+<<<<<<< HEAD
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+=======
+>>>>>>> origin/main
 
   const handleJoin = (roomId, userName) => {
     socket.emit('join', { roomId, userName });
@@ -80,6 +86,10 @@ const App = () => {
     return languages[language.toLowerCase()] || 63; // Default to JavaScript if unknown
   };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
   useEffect(() => {
     socket.on('userJoined', (roomUsers) => {
       setUsers(roomUsers);
@@ -122,7 +132,11 @@ const App = () => {
             />
           </div>
         ) : (
+<<<<<<< HEAD
           <div className="flex w-full overflow-hidden">
+=======
+          <div className="flex w-full">
+>>>>>>> origin/main
             <Sidebar
               roomId={roomId}
               users={users}
@@ -139,6 +153,7 @@ const App = () => {
               userName={userName}
               socket={socket}
             />
+<<<<<<< HEAD
             <div className="flex flex-1 overflow-hidden">
               <div className={`${showWhiteBoard ? 'w-full' : showAIAssistant ? 'w-2/3' : 'w-full'} p-4 flex flex-col gap-4 relative overflow-y-auto`}>
                 {/* AI Assistant Toggle Button */}
@@ -219,6 +234,57 @@ const App = () => {
                 <div className="w-1/3 border-l border-gray-700 p-4 bg-gray-900 overflow-y-auto">
                   <AICodeAssistant editorContent={code} />
                 </div>
+=======
+            <div className="w-3/4 p-4 flex flex-col gap-4 relative">
+              {showWhiteBoard ? (
+                <Whiteboard 
+                socket={socket} 
+                roomId={roomId} 
+                />
+              ) : (
+                <>
+                  {/* <h1 className="text-2xl font-semibold text-center">Welcome to Room {roomId}</h1> */}
+                  <p className="text-lg text-center">
+                    Hello, <span className="font-bold">{userName}</span>! Start coding below.
+                  </p>
+                  <Editor
+                    language={language}
+                    value={code}
+                    onChange={handleCodeChange}
+                    theme="vs-dark"
+                    options={{
+                      minimap: { enabled: false },
+                      fontSize: 16,
+                    }}
+                    height="400px"
+                  />
+                  <div>
+                    <p className="mb-3">Input</p>
+                    <textarea
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      className="w-full p-2 mt-2 bg-gray-700 rounded-lg text-white"
+                      rows="4"
+                      placeholder="Enter input for your code here..."
+                    />
+                  </div>
+                  <button
+                    onClick={handleRunCode}
+                    className="py-2 px-4 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-semibold shadow-lg"
+                  >
+                    Run Code
+                  </button>
+                  <p>Output</p>
+                  <div
+                    className="w-full p-2 mt-1 bg-gray-800 rounded-lg text-white overflow-y-auto max-h-40"
+                    dangerouslySetInnerHTML={{
+                      __html: (output || 'The output will be displayed here...').replace(/\n/g, '<br />'),
+                    }}
+                  />
+                  
+
+                </>
+>>>>>>> origin/main
               )}
             </div>
           </div>
