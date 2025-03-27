@@ -122,7 +122,7 @@ const App = () => {
             />
           </div>
         ) : (
-          <div className="flex w-full overflow-hidden">
+          <div className="flex w-full h-screen overflow-hidden">
             <Sidebar
               roomId={roomId}
               users={users}
@@ -206,7 +206,7 @@ const App = () => {
                     </button>
                     <p>Output</p>
                     <div
-                      className="w-full p-2 mt-1 bg-gray-800 rounded-lg text-white overflow-y-auto max-h-40"
+                      className="w-full p-2 mt-1 bg-gray-800 rounded-lg text-white h-auto"
                       dangerouslySetInnerHTML={{
                         __html: (output || 'The output will be displayed here...').replace(/\n/g, '<br />'),
                       }}

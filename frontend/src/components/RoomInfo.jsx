@@ -9,14 +9,13 @@ const RoomInfo = ({ roomId }) => {
 
   return (
     <div className="p-4 bg-gray-800 rounded-lg shadow-lg text-white">
-      <h2 className="text-xl font-semibold mb-2">Room Information</h2>
       <div className="flex items-center justify-between">
         <span className="text-lg">Room ID: {roomId}</span>
         <button
           onClick={copyToClipboard}
-          className="ml-4 py-2 px-4 bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 transition duration-200 rounded-lg text-white font-semibold shadow-lg"
+          className="w-full mt-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-center font-semibold shadow-lg"
         >
-          Copy Room ID
+          Copy ID
         </button>
       </div>
       
