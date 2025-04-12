@@ -193,7 +193,7 @@ const App = () => {
                       <textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        className="w-full p-2 mt-2 bg-gray-700 rounded-lg text-white"
+                        className="w-full p-2 mt-1 bg-gray-800 rounded-lg text-white h-auto"
                         rows="4"
                         placeholder="Enter input for your code here..."
                       />
